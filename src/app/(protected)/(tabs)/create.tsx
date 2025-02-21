@@ -1,17 +1,21 @@
 import { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, TextInput, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { View, Image, Text, Pressable, StyleSheet, TextInput, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign } from '@expo/vector-icons';
-import { router } from "expo-router";
+import { Link, router } from "expo-router";
+import { selectedGroupAtom } from '../../../atoms';
+import { useAtom } from 'jotai';
 
 export default function CreateScreen() {
   const [title, setTitle] = useState<string>("")
   const [bodyText, setBodyText] = useState<string>("")
+  const [group, setGroup] = useAtom(selectedGroupAtom);
 
   const goBack = () => {
-    setTitle("")
-    setBodyText("")
-    router.back()
+    setTitle("");
+    setBodyText("");
+    setGroup(null);
+    router.back();
   }
 
   return (
@@ -27,10 +31,22 @@ export default function CreateScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView showsVerticalScrollIndicator={false} style={{ paddingVertical: 15 }}>
           {/* COMMUNITY SELECTOR */}
-          <View style={styles.communityContainer}>
-            <Text style={styles.rStyles}>r/</Text>
-            <Text style={{ fontWeight: '600' }}>Select a community</Text>
-          </View>
+          <Link href={"groupSelector"} asChild>
+            <Pressable style={styles.communityContainer}>
+              {group ? (
+                <>
+                  <Image source={{ uri: group.image }} style={{ width: 20, height: 20, borderRadius: 10 }} />
+                  <Text style={{ fontWeight: '600' }}>{group.name}</Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.rStyles}>r/</Text>
+                  <Text style={{ fontWeight: '600' }}>Select a community</Text>
+                </>
+              )}
+
+            </Pressable>
+          </Link>
 
           {/* INPUTS */}
           <TextInput

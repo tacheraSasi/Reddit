@@ -13,6 +13,7 @@ export default function AppLayout() {
   return (
     <Stack>
       <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+      <Stack.Screen name='groupSelector' options={{headerShown: false}}/>
       <Stack.Screen
         name='post/[id]'
         options={{
