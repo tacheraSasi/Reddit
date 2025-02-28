@@ -1,14 +1,7 @@
-import { useState, useEffect } from "react";
 import { View, FlatList, ActivityIndicator, Text } from "react-native";
 import PostListItem from "../../../components/PostListItem";
 import { supabase } from "../../../lib/supabase";
-import { Tables } from "../../../types/database.types";
 import { useQuery } from "@tanstack/react-query";
-
-type Post = Tables<"posts"> & {
-  user: Tables<"users">;
-  group: Tables<"groups">;
-};
 
 const fetchPosts = async () => {
   const { data, error } = await supabase
