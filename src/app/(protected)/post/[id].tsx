@@ -3,13 +3,16 @@ import { useLocalSearchParams } from "expo-router";
 import PostListItem from "../../../components/PostListItem";
 import { fetchPostById } from "../../../services/postService";
 import { useQuery } from "@tanstack/react-query";
+import { useSupabase } from "../../../lib/supabase";
 
 export default function DetailedPost() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
+  const supabase = useSupabase();
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["posts", id],
-    queryFn: () => fetchPostById(id),
+    queryFn: () => fetchPostById(id, supabase),
   });
 
   if (isLoading) {

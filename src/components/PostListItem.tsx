@@ -5,7 +5,7 @@ import { Link } from "expo-router";
 import { Tables } from "../types/database.types";
 
 type Post = Tables<"posts"> & {
-  user: Tables<"users">;
+  // user: Tables<"users">;
   group: Tables<"groups">;
 };
 
@@ -53,7 +53,7 @@ export default function PostListItem({
             </View>
             {isDetailedPost && (
               <Text style={{ fontSize: 13, color: "#2E5DAA" }}>
-                {post.user.name}
+                {post.user?.name}
               </Text>
             )}
           </View>
