@@ -40,7 +40,6 @@ export default function PostListItem({
     queryFn: () => selectMyVote(post.id, session?.user.id, supabase),
   });
 
-  console.log(myVote);
   const isUpvoted = myVote?.value === 1;
   const isDownvoted = myVote?.value === -1;
 
