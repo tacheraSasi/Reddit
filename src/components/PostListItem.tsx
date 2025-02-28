@@ -3,10 +3,14 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { formatDistanceToNowStrict } from "date-fns";
 import { Link } from "expo-router";
 import { Tables } from "../types/database.types";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPostUpvotes } from "../services/postService";
+import { useSupabase } from "../lib/supabase";
 
 type Post = Tables<"posts"> & {
   // user: Tables<"users">;
   group: Tables<"groups">;
+  upvotes: { sum: number }[];
 };
 
 type PostListItemProps = {
@@ -18,6 +22,14 @@ export default function PostListItem({
   post,
   isDetailedPost,
 }: PostListItemProps) {
+  const supabase = useSupabase();
+  const { isLoading, data } = useQuery({
+    queryKey: ["posts", post.id, "upvotes"],
+    queryFn: () => fetchPostUpvotes(post.id, supabase),
+  });
+
+  console.log(data);
+
   const shouldShowImage = isDetailedPost || post.image;
   const shouldShowDescription = isDetailedPost || !post.image;
   return (
@@ -112,7 +124,7 @@ export default function PostListItem({
                   alignSelf: "center",
                 }}
               >
-                {post.upvotes}
+                {post.upvotes[0].sum || 0}
               </Text>
               <View
                 style={{
