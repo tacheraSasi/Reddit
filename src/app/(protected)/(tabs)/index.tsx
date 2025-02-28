@@ -8,6 +8,8 @@ export default function HomeScreen() {
     data: posts,
     isLoading,
     error,
+    refetch,
+    isRefetching,
   } = useQuery({
     queryKey: ["posts"],
     queryFn: () => fetchPosts(),
@@ -28,6 +30,8 @@ export default function HomeScreen() {
       <FlatList
         data={posts}
         renderItem={({ item }) => <PostListItem post={item} />}
+        onRefresh={refetch}
+        refreshing={isRefetching}
       />
     </View>
   );
