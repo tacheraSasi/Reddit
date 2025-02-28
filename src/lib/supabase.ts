@@ -9,6 +9,7 @@ import { useSession } from "@clerk/clerk-expo";
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
+// TODO: check if it creates a client everytime we use it
 export const useSupabase = () => {
   const { session } = useSession();
 
