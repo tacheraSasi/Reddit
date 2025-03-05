@@ -7,6 +7,7 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import posts from "../../../../assets/data/posts.json";
@@ -31,8 +32,8 @@ export default function DetailedPost() {
 
   const handleReplyButtonPressed = useCallback((commentId: string) => {
     console.log(commentId);
-    inputRef.current?.focus()
-  }, [])
+    inputRef.current?.focus();
+  }, []);
 
   if (!detailedPost) {
     return <Text>Post Not Found</Text>;

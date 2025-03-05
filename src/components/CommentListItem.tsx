@@ -17,7 +17,7 @@ const CommentListItem = ({
 }: CommentListItemProps) => {
   const [isShowReplies, setIsShowReplies] = useState<boolean>(false);
   console.log("I am rendered");
-  
+
   return (
     <View
       style={{
@@ -111,7 +111,7 @@ const CommentListItem = ({
         </Pressable>
       )}
       {/* List of Replies */}
-      {isShowReplies && (
+      {/* {isShowReplies && (
         <FlatList
           data={comment.replies}
           renderItem={({ item }) => (
@@ -122,7 +122,17 @@ const CommentListItem = ({
             />
           )}
         />
-      )}
+      )} */}
+
+      {isShowReplies &&
+        comment.replies.map((item) => (
+          <CommentListItem
+            key={item.id}
+            comment={item}
+            depth={depth + 1}
+            handleReplyButtonPressed={handleReplyButtonPressed}
+          />
+        ))}
     </View>
   );
 };
