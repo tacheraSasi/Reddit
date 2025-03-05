@@ -7,24 +7,51 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import posts from "../../../../assets/data/posts.json";
-import PostListItem from "../../../components/PostListItem";
-import comments from "../../../../assets/data/comments.json";
-import CommentListItem from "../../../components/CommentListItem";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AntDesign, MaterialIcons, Entypo } from "@expo/vector-icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+
+import CommentListItem from "../../../components/CommentListItem";
+import PostListItem from "../../../components/PostListItem";
+import { deletePostById, fetchPostById } from "../../../services/postService";
+import { useSupabase } from "../../../lib/supabase";
+import comments from "../../../../assets/data/comments.json";
 
 export default function DetailedPost() {
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const [comment, setComment] = useState<string>("");
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
+
   const inputRef = useRef<TextInput | null>(null);
 
   const insets = useSafeAreaInsets();
 
-  const detailedPost = posts.find((post) => post.id === id);
+  const queryClient = useQueryClient();
+  const supabase = useSupabase();
+
+  const {
+    data: post,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["posts", id],
+    queryFn: () => fetchPostById(id, supabase),
+  });
+
+  const { mutate: remove } = useMutation({
+    mutationFn: () => deletePostById(id, supabase),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      router.back();
+    },
+    onError: (error) => {
+      Alert.alert("Error", error.message);
+    },
+  });
 
   const postComments = comments.filter(
     (comment) => comment.post_id === "post-1"
@@ -35,7 +62,11 @@ export default function DetailedPost() {
     inputRef.current?.focus();
   }, []);
 
-  if (!detailedPost) {
+  if (isLoading) {
+    return <ActivityIndicator />;
+  }
+
+  if (error || !post) {
     return <Text>Post Not Found</Text>;
   }
 
@@ -45,6 +76,26 @@ export default function DetailedPost() {
       style={{ flex: 1 }}
       keyboardVerticalOffset={insets.top + 10}
     >
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Entypo
+                onPress={() => remove()}
+                name="trash"
+                size={24}
+                color="white"
+              />
+
+              <AntDesign name="search1" size={24} color="white" />
+              <MaterialIcons name="sort" size={27} color="white" />
+              <Entypo name="dots-three-horizontal" size={24} color="white" />
+            </View>
+          ),
+          animation: "slide_from_bottom",
+        }}
+      />
+
       <FlatList
         data={postComments}
         renderItem={({ item }) => (
@@ -54,9 +105,7 @@ export default function DetailedPost() {
             handleReplyButtonPressed={handleReplyButtonPressed}
           />
         )}
-        ListHeaderComponent={
-          <PostListItem post={detailedPost} isDetailedPost />
-        }
+        ListHeaderComponent={<PostListItem post={post} isDetailedPost />}
       />
       <View
         style={{
