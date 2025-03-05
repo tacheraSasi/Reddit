@@ -1,6 +1,6 @@
-import { View, FlatList, ActivityIndicator, Text } from "react-native";
+import { FlatList, ActivityIndicator, Text, Button } from "react-native";
 import PostListItem from "../../../components/PostListItem";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchPosts } from "../../../services/postService";
 import { useSupabase } from "../../../lib/supabase";
 
@@ -8,15 +8,27 @@ export default function HomeScreen() {
   const supabase = useSupabase();
 
   const {
-    data: posts,
+    data,
     isLoading,
     error,
     refetch,
     isRefetching,
-  } = useQuery({
+    fetchNextPage,
+    isFetchingNextPage,
+    hasNextPage,
+  } = useInfiniteQuery({
     queryKey: ["posts"],
-    queryFn: () => fetchPosts(supabase),
-    staleTime: 10_000,
+    queryFn: ({ pageParam }) => fetchPosts(pageParam, supabase),
+    initialPageParam: { limit: 2, offset: 0 },
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length === 0) {
+        return undefined;
+      }
+      return {
+        limit: 2,
+        offset: allPages.flat().length,
+      };
+    },
   });
 
   if (isLoading) {
@@ -28,14 +40,17 @@ export default function HomeScreen() {
     return <Text>Error fetching posts</Text>;
   }
 
+  const posts = data?.pages.flat() || [];
+
   return (
-    <View>
-      <FlatList
-        data={posts}
-        renderItem={({ item }) => <PostListItem post={item} />}
-        onRefresh={refetch}
-        refreshing={isRefetching}
-      />
-    </View>
+    <FlatList
+      data={posts}
+      renderItem={({ item }) => <PostListItem post={item} />}
+      onRefresh={refetch}
+      refreshing={isRefetching}
+      onEndReachedThreshold={2}
+      onEndReached={() => !isFetchingNextPage && hasNextPage && fetchNextPage()}
+      ListFooterComponent={isFetchingNextPage ? <ActivityIndicator /> : null}
+    />
   );
 }
