@@ -3,6 +3,9 @@ import { Entypo, Octicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { formatDistanceToNowStrict } from "date-fns";
 import { Comment } from "../types";
 import { useState, memo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCommentReplies, fetchComments } from "../services/postService";
+import { useSupabase } from "../lib/supabase";
 
 type CommentListItemProps = {
   comment: Comment;
@@ -16,7 +19,13 @@ const CommentListItem = ({
   handleReplyButtonPressed,
 }: CommentListItemProps) => {
   const [isShowReplies, setIsShowReplies] = useState<boolean>(false);
-  console.log("I am rendered");
+
+  const supabase = useSupabase();
+
+  const { data: comments } = useQuery({
+    queryKey: ["comments", { parentId: comment.id }],
+    queryFn: () => fetchCommentReplies(comment.id, supabase),
+  });
 
   return (
     <View
@@ -31,7 +40,7 @@ const CommentListItem = ({
       }}
     >
       {/* User Info */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+      {/* <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
         <Image
           source={{
             uri:
@@ -47,7 +56,7 @@ const CommentListItem = ({
         <Text style={{ color: "#737373", fontSize: 13 }}>
           {formatDistanceToNowStrict(new Date(comment.created_at))}
         </Text>
-      </View>
+      </View> */}
       {/* Comment Content */}
       <Text>{comment.comment}</Text>
       {/* Comment Actions */}
@@ -88,7 +97,7 @@ const CommentListItem = ({
         </View>
       </View>
       {/* Show Replies Button */}
-      {!!comment.replies.length && !isShowReplies && depth < 5 && (
+      {!!comments?.length && !isShowReplies && depth < 5 && (
         <Pressable
           onPress={() => setIsShowReplies(true)}
           style={{
@@ -125,7 +134,8 @@ const CommentListItem = ({
       )} */}
 
       {isShowReplies &&
-        comment.replies.map((item) => (
+        comments?.length &&
+        comments.map((item) => (
           <CommentListItem
             key={item.id}
             comment={item}

@@ -17,7 +17,11 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 
 import CommentListItem from "../../../components/CommentListItem";
 import PostListItem from "../../../components/PostListItem";
-import { deletePostById, fetchPostById } from "../../../services/postService";
+import {
+  deletePostById,
+  fetchComments,
+  fetchPostById,
+} from "../../../services/postService";
 import { useSupabase } from "../../../lib/supabase";
 import comments from "../../../../assets/data/comments.json";
 
@@ -42,6 +46,11 @@ export default function DetailedPost() {
     queryFn: () => fetchPostById(id, supabase),
   });
 
+  const { data: comments } = useQuery({
+    queryKey: ["comments", { postId: id }],
+    queryFn: () => fetchComments(id, supabase),
+  });
+
   const { mutate: remove } = useMutation({
     mutationFn: () => deletePostById(id, supabase),
     onSuccess: () => {
@@ -52,10 +61,6 @@ export default function DetailedPost() {
       Alert.alert("Error", error.message);
     },
   });
-
-  const postComments = comments.filter(
-    (comment) => comment.post_id === "post-1"
-  );
 
   const handleReplyButtonPressed = useCallback((commentId: string) => {
     console.log(commentId);
@@ -97,7 +102,7 @@ export default function DetailedPost() {
       />
 
       <FlatList
-        data={postComments}
+        data={comments}
         renderItem={({ item }) => (
           <CommentListItem
             comment={item}
