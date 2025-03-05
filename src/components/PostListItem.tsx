@@ -171,7 +171,7 @@ export default function PostListItem({
                   alignSelf: "center",
                 }}
               >
-                {post.nr_of_comments}
+                {post.nr_of_comments?.[0].count}
               </Text>
             </View>
           </View>
