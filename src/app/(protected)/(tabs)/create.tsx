@@ -20,28 +20,8 @@ import { selectedGroupAtom } from "../../../atoms";
 import { useAtom } from "jotai";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSupabase } from "../../../lib/supabase";
-import { Database, TablesInsert } from "../../../types/database.types";
-import { SupabaseClient } from "@supabase/supabase-js";
-
-type InsertPost = TablesInsert<"posts">;
-
-const insertPost = async (
-  post: InsertPost,
-  supabase: SupabaseClient<Database>
-) => {
-  // use supabase to insert a new post
-  const { data, error } = await supabase
-    .from("posts")
-    .insert(post)
-    .select()
-    .single();
-
-  if (error) {
-    throw error;
-  } else {
-    return data;
-  }
-};
+import { uploadImage } from "../../../utils/supabaseImages";
+import { insertPost } from "../../../services/postService";
 
 export default function CreateScreen() {
   const [title, setTitle] = useState<string>("");
@@ -54,7 +34,7 @@ export default function CreateScreen() {
   const supabase = useSupabase();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: () => {
+    mutationFn: (image: string | undefined) => {
       if (!group) {
         throw new Error("Please select a group");
       }
@@ -67,6 +47,7 @@ export default function CreateScreen() {
           title,
           description: bodyText,
           group_id: group.id,
+          image,
         },
         supabase
       );
@@ -82,6 +63,12 @@ export default function CreateScreen() {
       Alert.alert("Failed to insert post", error.message);
     },
   });
+
+  const onPostClick = async () => {
+    let imagePath = image ? await uploadImage(image, supabase) : undefined;
+
+    mutate(imagePath);
+  };
 
   const goBack = () => {
     setTitle("");
@@ -118,7 +105,7 @@ export default function CreateScreen() {
           onPress={() => goBack()}
         />
         <Pressable
-          onPress={() => mutate()}
+          onPress={() => onPostClick()}
           style={{ marginLeft: "auto" }}
           disabled={isPending}
         >

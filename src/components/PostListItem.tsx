@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSupabase } from "../lib/supabase";
 import { createUpvote, selectMyVote } from "../services/upvotesService";
 import { useSession } from "@clerk/clerk-expo";
+import SupabaseImage from "./SupabaseImage";
 
 type Post = Tables<"posts"> & {
   // user: Tables<"users">;
@@ -109,8 +110,9 @@ export default function PostListItem({
           {post.title}
         </Text>
         {shouldShowImage && post.image && (
-          <Image
-            source={{ uri: post.image }}
+          <SupabaseImage
+            path={post.image}
+            bucket="images"
             style={{ width: "100%", aspectRatio: 4 / 3, borderRadius: 15 }}
           />
         )}
