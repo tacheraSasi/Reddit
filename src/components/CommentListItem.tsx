@@ -9,6 +9,7 @@ import {
 } from "../services/commentsService";
 import { useSupabase } from "../lib/supabase";
 import { Tables } from "../types/database.types";
+import { useSession } from "@clerk/clerk-expo";
 
 type Comment = Tables<"comments">;
 
@@ -24,6 +25,8 @@ const CommentListItem = ({
   handleReplyButtonPressed,
 }: CommentListItemProps) => {
   const [isShowReplies, setIsShowReplies] = useState<boolean>(false);
+
+  const { session } = useSession();
 
   const supabase = useSupabase();
   const queryClient = useQueryClient();
@@ -86,12 +89,14 @@ const CommentListItem = ({
           gap: 14,
         }}
       >
-        <Entypo
-          onPress={() => removeComment()}
-          name="trash"
-          size={15}
-          color="#737373"
-        />
+        {session?.user.id === comment.user_id && (
+          <Entypo
+            onPress={() => removeComment()}
+            name="trash"
+            size={15}
+            color="#737373"
+          />
+        )}
         <Octicons
           name="reply"
           size={16}
