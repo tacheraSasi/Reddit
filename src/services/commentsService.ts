@@ -50,3 +50,19 @@ export const insertComment = async (
     return data;
   }
 };
+
+export const deleteComment = async (
+  id: string,
+  supabase: SupabaseClient<Database>,
+) => {
+  const { data, error } = await supabase
+    .from("comments")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    throw error;
+  } else {
+    return data;
+  }
+};
