@@ -12,8 +12,10 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, Feather } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
+
 import { selectedGroupAtom } from "../../../atoms";
 import { useAtom } from "jotai";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -44,6 +46,8 @@ const insertPost = async (
 export default function CreateScreen() {
   const [title, setTitle] = useState<string>("");
   const [bodyText, setBodyText] = useState<string>("");
+  const [image, setImage] = useState<string | null>(null);
+
   const [group, setGroup] = useAtom(selectedGroupAtom);
 
   const queryClient = useQueryClient();
@@ -84,6 +88,21 @@ export default function CreateScreen() {
     setBodyText("");
     setGroup(null);
     router.back();
+  };
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
   };
 
   return (
@@ -147,6 +166,30 @@ export default function CreateScreen() {
             scrollEnabled={false}
           />
 
+          {image && (
+            <View style={{ paddingBottom: 20 }}>
+              <AntDesign
+                name="close"
+                size={25}
+                color="white"
+                onPress={() => setImage(null)}
+                style={{
+                  position: "absolute",
+                  zIndex: 1,
+                  right: 10,
+                  top: 10,
+                  padding: 5,
+                  backgroundColor: "#00000090",
+                  borderRadius: 20,
+                }}
+              />
+              <Image
+                source={{ uri: image }}
+                style={{ width: "100%", aspectRatio: 1 }}
+              />
+            </View>
+          )}
+
           <TextInput
             placeholder="body text (optional)"
             value={bodyText}
@@ -155,6 +198,14 @@ export default function CreateScreen() {
             scrollEnabled={false}
           />
         </ScrollView>
+
+        {/* FOOTER */}
+        <View style={{ flexDirection: "row", gap: 20, padding: 10 }}>
+          <Feather name="link" size={20} color="black" />
+          <Feather name="image" size={20} color="black" onPress={pickImage} />
+          <Feather name="youtube" size={20} color="black" />
+          <Feather name="list" size={20} color="black" />
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
