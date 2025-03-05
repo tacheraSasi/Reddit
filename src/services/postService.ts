@@ -32,38 +32,7 @@ export const fetchPostById = async (
   }
 };
 
-export const fetchComments = async (
-  postId: string,
-  supabase: SupabaseClient<Database>,
-) => {
-  const { data, error } = await supabase
-    .from("comments")
-    .select("*, replies:comments(*)")
-    .eq("post_id", postId)
-    .is("parent_id", null);
 
-  if (error) {
-    throw error;
-  } else {
-    return data;
-  }
-};
-
-export const fetchCommentReplies = async (
-  parentId: string,
-  supabase: SupabaseClient<Database>,
-) => {
-  const { data, error } = await supabase
-    .from("comments")
-    .select("*, replies:comments(*)")
-    .eq("parent_id", parentId);
-
-  if (error) {
-    throw error;
-  } else {
-    return data;
-  }
-};
 
 // export const fetchPostUpvotes = async (
 //   id: string,

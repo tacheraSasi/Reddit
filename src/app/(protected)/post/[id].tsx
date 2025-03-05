@@ -17,18 +17,19 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 
 import CommentListItem from "../../../components/CommentListItem";
 import PostListItem from "../../../components/PostListItem";
+import { deletePostById, fetchPostById } from "../../../services/postService";
 import {
-  deletePostById,
   fetchComments,
-  fetchPostById,
-} from "../../../services/postService";
+  insertComment,
+} from "../../../services/commentsService";
+
 import { useSupabase } from "../../../lib/supabase";
-import comments from "../../../../assets/data/comments.json";
 
 export default function DetailedPost() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [comment, setComment] = useState<string>("");
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
+  const [replyToId, setReplyToId] = useState<string | null>(null);
 
   const inputRef = useRef<TextInput | null>(null);
 
@@ -62,8 +63,21 @@ export default function DetailedPost() {
     },
   });
 
+  const { mutate: createComment } = useMutation({
+    mutationFn: () =>
+      insertComment({ comment, post_id: id, parent_id: replyToId }, supabase),
+    onSuccess: (data) => {
+      setComment("");
+      setReplyToId(null);
+      queryClient.invalidateQueries({ queryKey: ["comments", { postId: id }] });
+      queryClient.invalidateQueries({
+        queryKey: ["comments", { parentId: replyToId }],
+      });
+    },
+  });
+
   const handleReplyButtonPressed = useCallback((commentId: string) => {
-    console.log(commentId);
+    setReplyToId(commentId);
     inputRef.current?.focus();
   }, []);
 
@@ -141,6 +155,7 @@ export default function DetailedPost() {
         />
         {isInputFocused && (
           <Pressable
+            onPress={() => createComment()}
             style={{
               backgroundColor: "#0d469b",
               borderRadius: 15,

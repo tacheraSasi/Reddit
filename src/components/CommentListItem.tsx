@@ -3,7 +3,7 @@ import { Entypo, Octicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { formatDistanceToNowStrict } from "date-fns";
 import { useState, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchCommentReplies, fetchComments } from "../services/postService";
+import { fetchCommentReplies } from "../services/commentsService";
 import { useSupabase } from "../lib/supabase";
 import { Tables } from "../types/database.types";
 
