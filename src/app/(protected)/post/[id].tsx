@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ export default function DetailedPost() {
   const { id } = useLocalSearchParams();
   const [comment, setComment] = useState<string>("");
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false);
+  const inputRef = useRef<TextInput | null>(null);
 
   const insets = useSafeAreaInsets();
 
@@ -28,7 +29,10 @@ export default function DetailedPost() {
     (comment) => comment.post_id === "post-1"
   );
 
-  console.log(postComments);
+  const handleReplyButtonPressed = (commentId: string) => {
+    console.log(commentId);
+    inputRef.current?.focus()
+  };
 
   if (!detailedPost) {
     return <Text>Post Not Found</Text>;
@@ -42,7 +46,13 @@ export default function DetailedPost() {
     >
       <FlatList
         data={postComments}
-        renderItem={({ item }) => <CommentListItem comment={item} />}
+        renderItem={({ item }) => (
+          <CommentListItem
+            comment={item}
+            depth={0}
+            handleReplyButtonPressed={handleReplyButtonPressed}
+          />
+        )}
         ListHeaderComponent={
           <PostListItem post={detailedPost} isDetailedPost />
         }
@@ -65,6 +75,7 @@ export default function DetailedPost() {
         }}
       >
         <TextInput
+          ref={inputRef}
           placeholder="Join the conversation"
           style={{ backgroundColor: "#E4E4E4", padding: 5, borderRadius: 5 }}
           value={comment}

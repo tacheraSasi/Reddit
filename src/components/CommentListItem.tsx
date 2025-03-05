@@ -1,13 +1,22 @@
-import { View, Text, Image } from "react-native";
+import { View, Text, Image, Pressable, FlatList } from "react-native";
 import { Entypo, Octicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { formatDistanceToNowStrict } from "date-fns";
 import { Comment } from "../types";
+import { useState } from "react";
 
 type CommentListItemProps = {
   comment: Comment;
+  depth: number;
+  handleReplyButtonPressed: (commentId: string) => void;
 };
 
-const CommentListItem = ({ comment }: CommentListItemProps) => {
+const CommentListItem = ({
+  comment,
+  depth,
+  handleReplyButtonPressed,
+}: CommentListItemProps) => {
+  const [isShowReplies, setIsShowReplies] = useState<boolean>(false);
+  console.log("I am rendered");
   return (
     <View
       style={{
@@ -17,6 +26,7 @@ const CommentListItem = ({ comment }: CommentListItemProps) => {
         paddingVertical: 5,
         gap: 10,
         borderLeftColor: "#E5E7EB",
+        borderLeftWidth: depth > 0 ? 1 : 0,
       }}
     >
       {/* User Info */}
@@ -37,10 +47,8 @@ const CommentListItem = ({ comment }: CommentListItemProps) => {
           {formatDistanceToNowStrict(new Date(comment.created_at))}
         </Text>
       </View>
-
       {/* Comment Content */}
       <Text>{comment.comment}</Text>
-
       {/* Comment Actions */}
       <View
         style={{
@@ -55,7 +63,7 @@ const CommentListItem = ({ comment }: CommentListItemProps) => {
           name="reply"
           size={16}
           color="#737373"
-          onPress={() => console.log("Reply button pressed")}
+          onPress={() => handleReplyButtonPressed(comment.id)}
         />
         <MaterialCommunityIcons
           name="trophy-outline"
@@ -78,6 +86,42 @@ const CommentListItem = ({ comment }: CommentListItemProps) => {
           />
         </View>
       </View>
+      {/* Show Replies Button */}
+      {!!comment.replies.length && !isShowReplies && depth < 5 && (
+        <Pressable
+          onPress={() => setIsShowReplies(true)}
+          style={{
+            backgroundColor: "#EDEDED",
+            borderRadius: 2,
+            paddingVertical: 3,
+            alignItems: "center",
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              letterSpacing: 0.5,
+              fontWeight: "500",
+              color: "#545454",
+            }}
+          >
+            Show Replies
+          </Text>
+        </Pressable>
+      )}
+      {/* List of Replies */}
+      {isShowReplies && (
+        <FlatList
+          data={comment.replies}
+          renderItem={({ item }) => (
+            <CommentListItem
+              comment={item}
+              depth={depth + 1}
+              handleReplyButtonPressed={handleReplyButtonPressed}
+            />
+          )}
+        />
+      )}
     </View>
   );
 };
