@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -29,10 +29,10 @@ export default function DetailedPost() {
     (comment) => comment.post_id === "post-1"
   );
 
-  const handleReplyButtonPressed = (commentId: string) => {
+  const handleReplyButtonPressed = useCallback((commentId: string) => {
     console.log(commentId);
     inputRef.current?.focus()
-  };
+  }, [])
 
   if (!detailedPost) {
     return <Text>Post Not Found</Text>;
