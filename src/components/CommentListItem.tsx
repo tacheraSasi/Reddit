@@ -1,11 +1,13 @@
 import { View, Text, Image, Pressable, FlatList } from "react-native";
 import { Entypo, Octicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { formatDistanceToNowStrict } from "date-fns";
-import { Comment } from "../types";
 import { useState, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCommentReplies, fetchComments } from "../services/postService";
 import { useSupabase } from "../lib/supabase";
+import { Tables } from "../types/database.types";
+
+type Comment = Tables<"comments">;
 
 type CommentListItemProps = {
   comment: Comment;
@@ -22,7 +24,7 @@ const CommentListItem = ({
 
   const supabase = useSupabase();
 
-  const { data: comments } = useQuery({
+  const { data: replies } = useQuery({
     queryKey: ["comments", { parentId: comment.id }],
     queryFn: () => fetchCommentReplies(comment.id, supabase),
   });
@@ -97,7 +99,7 @@ const CommentListItem = ({
         </View>
       </View>
       {/* Show Replies Button */}
-      {!!comments?.length && !isShowReplies && depth < 5 && (
+      {!!replies?.length && !isShowReplies && depth < 5 && (
         <Pressable
           onPress={() => setIsShowReplies(true)}
           style={{
@@ -134,8 +136,8 @@ const CommentListItem = ({
       )} */}
 
       {isShowReplies &&
-        comments?.length &&
-        comments.map((item) => (
+        replies?.length &&
+        replies.map((item) => (
           <CommentListItem
             key={item.id}
             comment={item}
